@@ -388,6 +388,29 @@ const hourDayPrices = [...hourDayMap.entries()].map(([key, val]) => {
   };
 });
 
+// Period (peak/shoulder/offpeak) aggregates
+const periodTotals: Record<string, { kwh: number; cost: number; count: number }> = {};
+for (const day of dailySummaries) {
+  for (const iv of day.intervals) {
+    const period = iv.period || 'unknown';
+    if (!periodTotals[period]) {
+      periodTotals[period] = { kwh: 0, cost: 0, count: 0 };
+    }
+    periodTotals[period].kwh += iv.importKwh;
+    periodTotals[period].cost += iv.importCost;
+    periodTotals[period].count++;
+  }
+}
+
+const periodSummaries = Object.entries(periodTotals)
+  .filter(([k]) => k !== 'unknown')
+  .map(([period, data]) => ({
+    period: period.charAt(0).toUpperCase() + period.slice(1),
+    kwh: round(data.kwh, 1),
+    cost: round(data.cost, 2),
+    avgPrice: data.kwh > 0 ? round(data.cost / data.kwh, 1) : 0,
+  }));
+
 // Overall stats
 const totalImportKwh = dailySummaries.reduce((s, d) => s + d.importKwh, 0);
 const totalExportKwh = dailySummaries.reduce((s, d) => s + d.exportKwh, 0);
@@ -443,6 +466,7 @@ writeJson('battery-analysis.json', batteryAnalysis);
 writeJson('price-distribution.json', priceDistribution);
 writeJson('hour-day-prices.json', hourDayPrices);
 writeJson('overall-stats.json', overallStats);
+writeJson('period-summaries.json', periodSummaries);
 
 // Write individual day files with full interval data
 const daysDir = path.join(outDir, 'days');

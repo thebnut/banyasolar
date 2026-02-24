@@ -4,6 +4,7 @@ import batteryAnalysisJson from '@/lib/data/battery-analysis.json';
 import priceDistributionJson from '@/lib/data/price-distribution.json';
 import hourDayPricesJson from '@/lib/data/hour-day-prices.json';
 import overallStatsJson from '@/lib/data/overall-stats.json';
+import periodSummariesJson from '@/lib/data/period-summaries.json';
 import type {
   DailySummary,
   MonthlySummary,
@@ -19,6 +20,7 @@ export const batteryAnalysis = batteryAnalysisJson as BatteryDayAnalysis[];
 export const priceDistribution = priceDistributionJson as PriceDistribution[];
 export const hourDayPrices = hourDayPricesJson as HourDayPrice[];
 export const overallStats = overallStatsJson as OverallStats;
+export const periodSummaries = periodSummariesJson as { period: string; kwh: number; cost: number; avgPrice: number }[];
 
 export function getDailySummary(date: string): DailySummary | undefined {
   return dailySummaries.find(d => d.date === date);

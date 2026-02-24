@@ -1,6 +1,6 @@
 'use client';
 
-import { dailySummaries, monthlySummaries, overallStats, formatCents } from '@/lib/data';
+import { dailySummaries, monthlySummaries, overallStats, periodSummaries, formatCents } from '@/lib/data';
 import { StatCard } from '@/components/stat-card';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -18,28 +18,13 @@ export default function CostAnalysisPage() {
     netCost: Number((m.netCost / 100).toFixed(2)),
   }));
 
-  // Peak vs off-peak analysis
-  const periodTotals: Record<string, { kwh: number; cost: number; count: number }> = {};
-  for (const day of dailySummaries) {
-    for (const iv of day.intervals || []) {
-      const period = iv.period || 'unknown';
-      if (!periodTotals[period]) {
-        periodTotals[period] = { kwh: 0, cost: 0, count: 0 };
-      }
-      periodTotals[period].kwh += iv.importKwh;
-      periodTotals[period].cost += iv.importCost;
-      periodTotals[period].count++;
-    }
-  }
-
-  const periodData = Object.entries(periodTotals)
-    .filter(([k]) => k !== 'unknown')
-    .map(([period, data]) => ({
-      period: period.charAt(0).toUpperCase() + period.slice(1),
-      kwh: Number(data.kwh.toFixed(1)),
-      cost: Number((data.cost / 100).toFixed(2)),
-      avgPrice: data.kwh > 0 ? Number((data.cost / data.kwh).toFixed(1)) : 0,
-    }));
+  // Period data from pre-computed summaries
+  const periodData = periodSummaries.map(p => ({
+    period: p.period,
+    kwh: p.kwh,
+    cost: Number((p.cost / 100).toFixed(2)),
+    avgPrice: p.avgPrice,
+  }));
 
   // Flat rate comparison
   const flat = stats.flatRateComparison;
